@@ -2,6 +2,8 @@ package com.projecttango.experiments.javaquickstart;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
 import com.google.atap.tangoservice.Tango;
 import com.projecttango.examples.java.quickstart.R;
@@ -31,14 +33,59 @@ public class Localization extends Activity {
     private static final int SECS_TO_MILLISECS = 1000;
     private double mPreviousPoseTimeStamp;
     private double mTimeToNextUpdate = UPDATE_INTERVAL_MS;
+    private TextView mRelocalizationTextView;
+    private double X;
+    private double Y;
+    private double Z;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_localization);
+        mRelocalizationTextView = (TextView) findViewById(R.id.text);
+        mRelocalizationTextView.setText("HERRO");
         mTango = new Tango(this);
         mIsRelocalized = false;
         mConfig = setTangoConfig(mTango, false, true);
+        setUpTangoListeners();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Clear the relocalization state: we don't know where the device has been since our app
+        // was paused.
+        mIsRelocalized = false;
+
+        // Re-attach listeners.
+        try {
+            setUpTangoListeners();
+        } catch (TangoErrorException e) {
+
+        } catch (SecurityException e) {
+
+        }
+
+        // Connect to the tango service (start receiving pose updates).
+        try {
+            mTango.connect(mConfig);
+        } catch (TangoOutOfDateException e) {
+            ;
+        } catch (TangoErrorException e) {
+
+        } catch (TangoInvalidException e) {
+
+        }
+    }
+
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.start:
+                startLocalization();
+                break;
+
+        }
     }
 
     private TangoConfig setTangoConfig(Tango tango, boolean isLearningMode, boolean isLoadAdf) {
@@ -139,17 +186,18 @@ public class Localization extends Activity {
                             synchronized (mSharedLock) {
 
                                 mRelocalizationTextView.setText(mIsRelocalized ?
-                                        getString(R.string.localized) :
-                                        getString(R.string.not_localized));
+                                        "Localized\n X:" + Double.toString(X) + "\nY:" +  Double.toString(Y) + "\nZ:" + Double.toString(Z)  :
+                                        "Not Localized");
                             }
                         }
                     });
                 }
+                X = pose.translation[0];
+                Y = pose.translation[1];
+                Z = pose.translation[2];
 
-                if (updateRenderer) {
-                    mRenderer.updateDevicePose(pose, mIsRelocalized);
                 }
-            }
+
 
             @Override
             public void onFrameAvailable(int cameraId) {
@@ -157,4 +205,6 @@ public class Localization extends Activity {
             }
         });
     }
+
+
 }
