@@ -18,32 +18,31 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true" />
 
-    <TextView
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="ismark"
-        android:id="@+id/ismark"
+        android:text="Mark"
+        android:id="@+id/mark"
         android:layout_below="@+id/text"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="56dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Small Text"
-        android:id="@+id/angle"
-        android:layout_below="@+id/ismark"
-        android:layout_alignParentStart="true" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="ismark"
+        android:id="@+id/ismark"
+        android:layout_below="@+id/mark"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/mark" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Mark"
-        android:id="@+id/mark"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
-
-
+        android:text="Manual"
+        android:id="@+id/manual"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>

@@ -19,10 +19,12 @@ import com.google.atap.tangoservice.TangoOutOfDateException;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.google.atap.tangoservice.TangoXyzIjData;
 import android.widget.Button;
+
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-public class Localization extends Activity implements View.OnClickListener {
+public class Manual extends Activity implements View.OnClickListener {
     private static final String TAG = Localization.class.getSimpleName();
     private Tango mTango;
     private TangoConfig mConfig;
@@ -36,35 +38,29 @@ public class Localization extends Activity implements View.OnClickListener {
     private double mTimeToNextUpdate = UPDATE_INTERVAL_MS;
     private TextView mRelocalizationTextView;
     private TextView markTextView;
-    private TextView angleTextView;
-    private TextView tAngleTextView;
     private double X;
     private double Y;
     private double Z;
-    private double[] rot;
     private double[] location;
-    private double rotation;
     private Button markButton;
     private Button manualButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         location = new double[3];
-        rot = new double[4];
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_localization);
         mRelocalizationTextView = (TextView) findViewById(R.id.text);
         markTextView = (TextView) findViewById(R.id.ismark);
-        angleTextView = (TextView) findViewById(R.id.angle);
-
         mRelocalizationTextView.setText("HERRO");
         markButton = (Button) findViewById(R.id.mark);
         markButton.setOnClickListener(this);
-
+        manualButton = (Button) findViewById(R.id.manual);
+        manualButton.setOnClickListener(this);
         mTango = new Tango(this);
         mIsRelocalized = false;
         mConfig = setTangoConfig(mTango, false, true);
-        setUpTangoListeners();
+        //setUpTangoListeners();
     }
 
     @Override
@@ -76,13 +72,7 @@ public class Localization extends Activity implements View.OnClickListener {
         mIsRelocalized = false;
 
         // Re-attach listeners.
-        try {
-            setUpTangoListeners();
-        } catch (TangoErrorException e) {
 
-        } catch (SecurityException e) {
-
-        }
 
         // Connect to the tango service (start receiving pose updates).
         try {
@@ -100,11 +90,10 @@ public class Localization extends Activity implements View.OnClickListener {
         switch (v.getId()) {
             case R.id.mark:
                 mark();
-                //markTextView.setText(Double.toString(location[0]) + "\nY:" +  Double.toString(location[1]) + "\nZ:" + Double.toString(location[2]));
+                markTextView.setText(Double.toString(location[0]) + "\nY:" +  Double.toString(location[1]) + "\nZ:" + Double.toString(location[2]));
                 break;
             case R.id.manual:
-                Intent startADIntent = new Intent(this, Manual.class);
-                startActivity(startADIntent);
+
 
         }
     }
@@ -136,26 +125,6 @@ public class Localization extends Activity implements View.OnClickListener {
             }
         }
         return config;
-    }
-
-    public double getRotation(double x, double y){
-        double diffx = (location[0] - x);// / (cube.z - camera.z);
-        double diffy = (location[1] - y);
-        double angle = (Math.atan(diffx / diffy))*(180/Math.PI);
-        if(diffy >= 0){
-            if(angle < 0){
-                angle = angle + 360;
-            }else{
-                angle = angle;
-            }
-
-        } else {
-            angle = angle + 180;
-        }
-
-
-        return angle;
-
     }
 
     private void setUpTangoListeners() {
@@ -233,15 +202,8 @@ public class Localization extends Activity implements View.OnClickListener {
                             synchronized (mSharedLock) {
 
                                 mRelocalizationTextView.setText(mIsRelocalized ?
-                                        "Localized\n X:" + Double.toString(X) + "\nY:" +  Double.toString(Y) + "\nZ:" + Double.toString(Z) :
+                                        "Localized\n X:" + Double.toString(X) + "\nY:" +  Double.toString(Y) + "\nZ:" + Double.toString(Z)  :
                                         "Not Localized");
-                                angleTextView.setText(Double.toString(getRotation(X, Y)));
-                                double yaw   =  Math.asin(2*rot[0]*rot[1] + 2*rot[2]*rot[3]);
-                                yaw = Math.atan2(2.0 * (rot[1] * rot[2] + rot[3] * rot[0]), rot[3] * rot[3] - rot[0] * rot[0] - rot[1] * rot[1] + rot[2] * rot[2]) *(180/ Math.PI);
-                                yaw   =  Math.asin(2 * rot[0] * rot[1] + 2 * rot[2] * rot[3])*(180/ Math.PI);
-                                markTextView.setText(Double.toString(yaw));
-
-
                             }
                         }
                     });
@@ -250,10 +212,6 @@ public class Localization extends Activity implements View.OnClickListener {
                     X = pose.translation[0];
                     Y = pose.translation[1];
                     Z = pose.translation[2];
-                    rot = pose.rotation;
-
-
-
                 }
 
 

@@ -46,7 +46,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.projecttango.experiments.javaquickstart.Localization"></activity>
+        <activity android:name="com.projecttango.experiments.javaquickstart.Localization" />
+        <activity android:name="com.projecttango.experiments.javaquickstart.Manual"></activity>
     </application>
 
 </manifest>
