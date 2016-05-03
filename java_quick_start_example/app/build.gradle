@@ -32,5 +32,6 @@ if (project.hasProperty("Tango.catkin_devel_prefix")) {
 }
 
 dependencies {
-    compile fileTree(dir: external_lib_prefix + '/jar', include: ['**/*.jar'])
+    compile files('libs/libgdx-degen.gdx.math-0.9.6.jar')
+    compile files('libs/TangoSDK_LucidaAnseris_Java.jar')
 }

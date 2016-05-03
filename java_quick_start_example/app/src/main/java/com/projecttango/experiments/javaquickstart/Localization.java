@@ -18,6 +18,7 @@ import com.google.atap.tangoservice.TangoInvalidException;
 import com.google.atap.tangoservice.TangoOutOfDateException;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.google.atap.tangoservice.TangoXyzIjData;
+import com.badlogic.gdx.math.*;
 import android.widget.Button;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -46,9 +47,11 @@ public class Localization extends Activity implements View.OnClickListener {
     private double rotation;
     private Button markButton;
     private Button manualButton;
+    float[] coor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        coor = new float[4];
         location = new double[3];
         rot = new double[4];
         super.onCreate(savedInstanceState);
@@ -132,7 +135,7 @@ public class Localization extends Activity implements View.OnClickListener {
             // Load the latest ADF if ADFs are found.
             if (fullUUIDList.size() > 0) {
                 config.putString(TangoConfig.KEY_STRING_AREADESCRIPTION,
-                        fullUUIDList.get(fullUUIDList.size() - 1));
+                        "520da138-f402-468c-bb15-0d059757ef71");
             }
         }
         return config;
@@ -142,7 +145,7 @@ public class Localization extends Activity implements View.OnClickListener {
         double diffx = (location[0] - x);// / (cube.z - camera.z);
         double diffy = (location[1] - y);
         double angle = (Math.atan(diffx / diffy))*(180/Math.PI);
-        if(diffy >= 0){
+        if(diffy <= 0){
             if(angle < 0){
                 angle = angle + 360;
             }else{
@@ -154,7 +157,7 @@ public class Localization extends Activity implements View.OnClickListener {
         }
 
 
-        return angle;
+        return (angle + 90)%360;
 
     }
 
@@ -231,15 +234,33 @@ public class Localization extends Activity implements View.OnClickListener {
                         @Override
                         public void run() {
                             synchronized (mSharedLock) {
+                                double dAngle = getRotation(X, Y);
 
                                 mRelocalizationTextView.setText(mIsRelocalized ?
                                         "Localized\n X:" + Double.toString(X) + "\nY:" +  Double.toString(Y) + "\nZ:" + Double.toString(Z) :
                                         "Not Localized");
-                                angleTextView.setText(Double.toString(getRotation(X, Y)));
-                                double yaw   =  Math.asin(2*rot[0]*rot[1] + 2*rot[2]*rot[3]);
-                                yaw = Math.atan2(2.0 * (rot[1] * rot[2] + rot[3] * rot[0]), rot[3] * rot[3] - rot[0] * rot[0] - rot[1] * rot[1] + rot[2] * rot[2]) *(180/ Math.PI);
-                                yaw   =  Math.asin(2 * rot[0] * rot[1] + 2 * rot[2] * rot[3])*(180/ Math.PI);
-                                markTextView.setText(Double.toString(yaw));
+                                angleTextView.setText(Double.toString(dAngle));
+                                double x = rot[0];
+                                double y = rot[1];
+                                double z = rot[2];
+                                double w = rot[3];
+                                double tAngle = Math.toDegrees(Math.atan2(2.0*(x*y+w*z),w*w +  x*x -z*z ))+ 180.0;
+
+                                double angDif = dAngle - tAngle;
+                                //if (angDif > 180.0 || angDif < 0){
+                                //    markTextView.setText("left");
+                                //}
+                                //else{
+                                 //   markTextView.setText("right");
+                                //}
+                                double check = tAngle-90;
+                                if (check < 0){
+                                    check = 360 + check;
+                                }
+
+                                markTextView.setText(Double.toString(check));
+
+
 
 
                             }
@@ -250,6 +271,7 @@ public class Localization extends Activity implements View.OnClickListener {
                     X = pose.translation[0];
                     Y = pose.translation[1];
                     Z = pose.translation[2];
+                    coor = pose.getRotationAsFloats();
                     rot = pose.rotation;
 
 
